@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+</head>
+<body>
+  <div>
+    <a href="https://developers.google.com/web/tools/chrome-devtools/rendering-tools/js-execution?hl=ja">JavaScript 実行の高速化</a> によると、
+    <ul>
+      <li>[Self time]。 関数の現在の呼び出しを完了するまでにかかった時間。関数自体のステートメントのみを含み、その関数が呼び出した関数は含みません。</li>
+      <li>[Total time]。現在の呼び出しを完了するまでにかかった時間。この関数と、この関数が呼び出したすべての関数を含みます。</li>
+    </ul>
+    とのこと。その検証。
+  </div>
+
+  <script>
+  (function() {
+    const task = () => Math.random();
+    const callTasks1 = (callback = null) => {
+      for (let i = 0; i < 1000000; i += 1) {
+        task();
+      }
+      if (callback) {
+        callback();
+      }
+    };
+    const callTasks2 = () => {
+      for (let i = 0; i < 1000000; i += 1) {
+        task();
+      }
+    };
+
+    for (let i = 0; i < 100; i += 1) {
+      callTasks1(callTasks2);
+      console.log('Scripting...');
+    }
+  }).call();
+  </script>
+</body>
+</html>
