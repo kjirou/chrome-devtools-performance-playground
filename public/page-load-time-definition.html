@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+</head>
+<body>
+  <div>
+    <strong>Page load time</strong> という単語があって、正確な定義がどこにあるかわからないんだけど、
+    「画面表示までに掛かった時間」らしい。<br>
+    実際、Chrome で "record to the page load" というボタンを押すとそうであるみたい。<br>
+    <br>
+    しかし、非同期処理を挟んだ場合や、非同期処理をループさせた場合はどうなるのかわからないので、その確認をする。<br>
+    結論としては、「Page load の計測は非同期処理を待っているのではなく、<strong>固定秒数(おそらく 3 秒)待って</strong>計測している」ように見える。<br>
+    <ul>
+      <li><a href="?mode=after-1sec">1 秒後にタスクを実行する</a> ... 非同期処理を待って計測しているようにみえる</li>
+      <li><a href="?mode=after-3sec">3 秒後にタスクを実行する</a> ... <strong>非同期処理途中で計測を止める！</strong></li>
+      <li><a href="?mode=after-5sec">5 秒後にタスクを実行する</a> ... DevTools は非同期処理を待たないで計測してようにみえる</li>
+    </ul>
+  </div>
+
+  <script>
+  (function() {
+    const task = () => Math.random();
+    const callTasks = (callCount) => {
+      for (let i = 0; i < callCount; i += 1) {
+        task();
+        if (i % 1000 === 0) {
+          console.log('Scripting...');
+        }
+      }
+    };
+
+    const callTasksAsync = (waitTime, callback) => {
+      setTimeout(() => {
+        callTasks(10000000);
+        callback();
+      }, waitTime);
+      console.log('Set an async scripting task');
+    };
+
+    if (location.href.indexOf('?mode=after-1sec') !== -1) {
+      callTasksAsync(1000, () => {});
+    } else if (location.href.indexOf('?mode=after-3sec') !== -1) {
+      callTasksAsync(3000, () => {});
+    } else if (location.href.indexOf('?mode=after-5sec') !== -1) {
+      callTasksAsync(5000, () => {});
+    } else if (location.href.indexOf('?mode=infinite-async-loop') !== -1) {
+    }
+  }).call();
+  </script>
+</body>
+</html>
