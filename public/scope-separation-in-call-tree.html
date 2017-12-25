@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+</head>
+<body>
+  <div>
+    Call Tree タブからドリルダウンして Total Time や Self Time を参照していくときに、何かの単位で Activity が分割されている。<br>
+    これが何単位で分割されているのかを調べる。<br>
+    <br>
+    結論：関数呼び出し単位。関数定義と呼び出しが関数内部に閉じてても分割される。
+  </div>
+
+  <script>
+  (function() {
+    const task = () => Math.random();
+    const callTasks = (callCount) => {
+      for (let i = 0; i < callCount; i += 1) {
+        task();
+        if (i % 1000 === 0) {
+          console.log('Scripting...');
+        }
+      }
+    };
+
+    const callTasksA = () => {
+      callTasks(5000000);
+      // この内部で定義と呼び出しが完結している関数でも、Call Tree 上で別タスクとして認識できる。
+      const callTasksInnerA = () => {
+        callTasks(5000000);
+      };
+      callTasksInnerA();
+    };
+
+    if (location.href.indexOf('?mode=a') !== -1) {
+      callTasksA();
+    }
+  }).call();
+  </script>
+</body>
+</html>
